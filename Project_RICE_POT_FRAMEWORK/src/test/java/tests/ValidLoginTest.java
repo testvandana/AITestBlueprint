@@ -34,7 +34,8 @@ public class ValidLoginTest {
             loginPage.enterPassword("ValidPassword123!");
             loginPage.checkRememberMe();
             loginPage.clickLogin();
-            Assert.assertTrue(driver.getCurrentUrl().contains("home"), "Valid login failed. URL did not change to home.");
+            Assert.assertTrue(driver.getCurrentUrl().contains("home"),
+                    "Valid login failed. URL did not change to home.");
         } catch (Exception e) {
             throw new Exception(e);
         }
