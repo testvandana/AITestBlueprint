@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function FetchIssues({ activeConnection, onComplete, onBack }) {
+export default function FetchIssues({ activeConnection, setFetchedIssues, onComplete, onBack }) {
   const [productName, setProductName] = useState('');
   const [projectKey, setProjectKey] = useState('');
   const [sprintVersion, setSprintVersion] = useState('');
@@ -8,13 +8,40 @@ export default function FetchIssues({ activeConnection, onComplete, onBack }) {
   const [fetchStatus, setFetchStatus] = useState(null); // null | 'fetching' | 'done' | 'error'
   const [fetchedCount, setFetchedCount] = useState(0);
 
-  const handleFetch = () => {
-    if (!projectKey.trim()) return;
+  const handleFetch = async () => {
+    if (!projectKey.trim() || !activeConnection) return;
+    
     setFetchStatus('fetching');
-    setTimeout(() => {
-      setFetchedCount(0); // In real app this would come from API
-      setFetchStatus('done');
-    }, 2000);
+    try {
+      const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000/api/jira/issues' : '/api/jira/issues';
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: activeConnection.url,
+          email: activeConnection.email,
+          token: activeConnection.token,
+          projectKey: projectKey,
+          sprintVersion: sprintVersion || undefined
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setFetchedCount(data.count || data.issues?.length || 0);
+        setFetchStatus('done');
+        if (typeof setFetchedIssues === 'function') {
+          setFetchedIssues(data.issues || []);
+        }
+      } else {
+        console.error("Failed to fetch:", data.detail);
+        setFetchStatus('error');
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      setFetchStatus('error');
+    }
   };
 
   return (
@@ -86,6 +113,12 @@ export default function FetchIssues({ activeConnection, onComplete, onBack }) {
             <div className="alert alert-success" style={{ marginBottom: '1rem' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
               <span>Fetch complete! {fetchedCount} issues found. Proceed to review.</span>
+            </div>
+          )}
+          {fetchStatus === 'error' && (
+            <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Failed to fetch Jira issues. Please check your credentials and project key.</span>
             </div>
           )}
 

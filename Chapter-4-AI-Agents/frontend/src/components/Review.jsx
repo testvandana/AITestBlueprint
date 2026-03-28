@@ -1,8 +1,4 @@
-import { useState } from 'react';
-
-export default function Review({ activeConnection, onComplete, onBack }) {
-  const [contextInput, setContextInput] = useState('');
-
+export default function Review({ activeConnection, fetchedIssues, contextInput, setContextInput, onComplete, onBack }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
@@ -51,21 +47,40 @@ export default function Review({ activeConnection, onComplete, onBack }) {
       <div className="card">
         <div className="card-header">
           <div>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.125rem' }}>Review Issues (0)</h2>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.125rem' }}>Review Issues ({fetchedIssues?.length || 0})</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0 }}>
               Issues that will be used to generate the test plan
             </p>
           </div>
         </div>
         <div className="card-body">
-          <div className="empty-state" style={{ padding: '2rem' }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-            </svg>
-            <h3>No issues fetched yet</h3>
-            <p>Go back to fetch issues from your connected project</p>
-          </div>
+          {(!fetchedIssues || fetchedIssues.length === 0) ? (
+            <div className="empty-state" style={{ padding: '2rem' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <h3>No issues fetched yet</h3>
+              <p>Go back to fetch issues from your connected project</p>
+            </div>
+          ) : (
+            <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {fetchedIssues.slice(0, 10).map((issue) => (
+                <div key={issue.id} style={{ padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <span style={{ fontWeight: '600', fontSize: '0.85rem' }}>{issue.key}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{issue.fields?.issuetype?.name || 'Issue'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.9rem' }}>{issue.fields?.summary}</div>
+                </div>
+              ))}
+              {fetchedIssues.length > 10 && (
+                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0.5rem 0' }}>
+                  + {fetchedIssues.length - 10} more issues
+                </div>
+              )}
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button className="btn btn-outline" onClick={onBack}>← Back</button>

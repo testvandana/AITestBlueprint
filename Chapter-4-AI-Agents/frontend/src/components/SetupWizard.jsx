@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function SetupWizard({ onComplete, onSaveConnection, savedConnections, activeConnection, setActiveConnection }) {
+export default function SetupWizard({ onComplete, onSaveConnection, savedConnections, activeConnection, setActiveConnection, llmSettings, setLlmSettings }) {
   const [connectionType, setConnectionType] = useState('jira');
   const [connectionName, setConnectionName] = useState('');
   const [url, setUrl] = useState('');
@@ -8,10 +8,7 @@ export default function SetupWizard({ onComplete, onSaveConnection, savedConnect
   const [apiToken, setApiToken] = useState('');
   const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error'
 
-  // LLM Settings
-  const [llmProvider, setLlmProvider] = useState('ollama');
-  const [llmApiKey, setLlmApiKey] = useState('');
-  const [llmModel, setLlmModel] = useState('');
+  // LLM Status is still local since it represents testing state
   const [llmStatus, setLlmStatus] = useState(null);
 
   const handleSaveConnection = () => {
@@ -182,7 +179,7 @@ export default function SetupWizard({ onComplete, onSaveConnection, savedConnect
         <div className="card-body">
           <div className="form-group">
             <label className="form-label">LLM Provider</label>
-            <select className="form-control" value={llmProvider} onChange={e => setLlmProvider(e.target.value)}>
+            <select className="form-control" value={llmSettings?.provider || 'ollama'} onChange={e => setLlmSettings({ ...llmSettings, provider: e.target.value })}>
               <option value="ollama">🖥️ Local — Ollama</option>
               <option value="groq">⚡ Cloud — Groq (Fast)</option>
               <option value="openai">🤖 Cloud — OpenAI</option>
@@ -191,10 +188,10 @@ export default function SetupWizard({ onComplete, onSaveConnection, savedConnect
             </select>
           </div>
 
-          {llmProvider !== 'ollama' && (
+          {llmSettings?.provider !== 'ollama' && (
             <div className="form-group">
               <label className="form-label">API Key *</label>
-              <input type="password" className="form-control" placeholder="Paste your API key" value={llmApiKey} onChange={e => setLlmApiKey(e.target.value)} />
+              <input type="password" className="form-control" placeholder="Paste your API key" value={llmSettings?.apiKey || ''} onChange={e => setLlmSettings({ ...llmSettings, apiKey: e.target.value })} />
             </div>
           )}
 
@@ -202,13 +199,13 @@ export default function SetupWizard({ onComplete, onSaveConnection, savedConnect
             <label className="form-label">Model Name</label>
             <input
               className="form-control"
-              placeholder={llmProvider === 'ollama' ? 'e.g., llama3, mistral' : llmProvider === 'openai' ? 'e.g., gpt-4o' : llmProvider === 'gemini' ? 'e.g., gemini-2.0-flash' : llmProvider === 'claude' ? 'e.g., claude-sonnet-4-20250514' : 'e.g., llama-3.3-70b-versatile'}
-              value={llmModel}
-              onChange={e => setLlmModel(e.target.value)}
+              placeholder={llmSettings?.provider === 'ollama' ? 'e.g., llama3, mistral' : llmSettings?.provider === 'openai' ? 'e.g., gpt-4o' : llmSettings?.provider === 'gemini' ? 'e.g., gemini-2.0-flash' : llmSettings?.provider === 'claude' ? 'e.g., claude-sonnet-4-20250514' : 'e.g., llama-3.3-70b-versatile'}
+              value={llmSettings?.model || ''}
+              onChange={e => setLlmSettings({ ...llmSettings, model: e.target.value })}
             />
           </div>
 
-          {llmProvider === 'ollama' && (
+          {llmSettings?.provider === 'ollama' && (
             <div className="alert alert-info" style={{ marginBottom: '1rem' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
               <span>Make sure Ollama is running locally on port 11434 before testing the connection.</span>

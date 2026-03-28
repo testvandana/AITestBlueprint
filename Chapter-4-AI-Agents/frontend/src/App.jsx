@@ -14,9 +14,36 @@ function App() {
     return localStorage.getItem('theme') || 'light';
   });
 
-  // Shared connection state lifted here
-  const [savedConnections, setSavedConnections] = useState([]);
-  const [activeConnection, setActiveConnection] = useState(null);
+  const [savedConnections, setSavedConnections] = useState(() => {
+    const saved = localStorage.getItem('alm_connections');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [activeConnection, setActiveConnection] = useState(() => {
+    const active = localStorage.getItem('alm_active_connection');
+    return active ? JSON.parse(active) : null;
+  });
+  const [llmSettings, setLlmSettings] = useState(() => {
+    const saved = localStorage.getItem('llm_settings');
+    return saved ? JSON.parse(saved) : { provider: 'ollama', apiKey: '', model: '' };
+  });
+  const [fetchedIssues, setFetchedIssues] = useState([]);
+  const [contextInput, setContextInput] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('alm_connections', JSON.stringify(savedConnections));
+  }, [savedConnections]);
+
+  useEffect(() => {
+    if (activeConnection) {
+      localStorage.setItem('alm_active_connection', JSON.stringify(activeConnection));
+    } else {
+      localStorage.removeItem('alm_active_connection');
+    }
+  }, [activeConnection]);
+
+  useEffect(() => {
+    localStorage.setItem('llm_settings', JSON.stringify(llmSettings));
+  }, [llmSettings]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -138,11 +165,14 @@ function App() {
                 savedConnections={savedConnections}
                 activeConnection={activeConnection}
                 setActiveConnection={setActiveConnection}
+                llmSettings={llmSettings}
+                setLlmSettings={setLlmSettings}
               />
             )}
             {currentStep === 2 && (
               <FetchIssues
                 activeConnection={activeConnection}
+                setFetchedIssues={setFetchedIssues}
                 onComplete={() => setCurrentStep(3)}
                 onBack={() => setCurrentStep(1)}
               />
@@ -150,12 +180,20 @@ function App() {
             {currentStep === 3 && (
               <Review
                 activeConnection={activeConnection}
+                fetchedIssues={fetchedIssues}
+                contextInput={contextInput}
+                setContextInput={setContextInput}
                 onComplete={() => setCurrentStep(4)}
                 onBack={() => setCurrentStep(2)}
               />
             )}
             {currentStep === 4 && (
-              <TestPlan onBack={() => setCurrentStep(3)} />
+              <TestPlan 
+                fetchedIssues={fetchedIssues}
+                contextInput={contextInput}
+                llmSettings={llmSettings}
+                onBack={() => setCurrentStep(3)} 
+              />
             )}
           </div>
         );
