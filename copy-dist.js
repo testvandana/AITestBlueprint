@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
 function copyRecursiveSync(src, dest) {
   const exists = fs.existsSync(src);
   const stats = exists && fs.statSync(src);
@@ -15,19 +12,9 @@ function copyRecursiveSync(src, dest) {
   }
 }
 
-function copyFolderContentsSync(src, dest) {
-  if (!fs.existsSync(src)) return;
-  fs.readdirSync(src).forEach((childItemName) => {
-    const srcPath = path.join(src, childItemName);
-    const destPath = path.join(dest, childItemName);
-    if (fs.statSync(srcPath).isDirectory()) {
-      if (!fs.existsSync(destPath)) fs.mkdirSync(destPath);
-      copyRecursiveSync(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  });
+if (fs.existsSync('public')) {
+  fs.rmSync('public', { recursive: true, force: true });
 }
 
-copyFolderContentsSync('Chapter-4-AI-Agents/public', '.');
-console.log('Copied built output to root correctly for Vercel.');
+copyRecursiveSync('Chapter-4-AI-Agents/public', 'public');
+console.log('Copied built output to public/ directory correctly for Vercel.');
