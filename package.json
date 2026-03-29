@@ -1,0 +1,7 @@
+{
+  "name": "aitestblueprint-repo-root",
+  "private": true,
+  "scripts": {
+    "build": "cd Chapter-4-AI-Agents/backend && npm install && cd ../frontend && npm install && npm run build && cd ../.. && node copy-dist.js"
+  }
+}
