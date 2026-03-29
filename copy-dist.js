@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 function copyRecursiveSync(src, dest) {
   const exists = fs.existsSync(src);
   const stats = exists && fs.statSync(src);
