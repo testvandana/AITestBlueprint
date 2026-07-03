@@ -292,10 +292,6 @@ Contributions, issues, and feature requests are welcome! Feel free to open an is
 
 ---
 
-## 📄 License
-
-This project is for educational purposes. Please refer to individual project directories for any specific licensing information.
-
 ---
 
 <p align="center">
